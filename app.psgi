@@ -6,15 +6,16 @@ use warnings;
 use Plack::Request;
 use Plack::App::Apache2FileManager::Mocks;
 use Apache2::FileManager;
+use Plack::Builder;
 
-my $document_root = '.';
+my $document_root = '/Users/pjlsergeant/dev/p5-plack-app-apache2filemanager';
 
 our $R;
 our $CONFIG;
 
 *Apache2::FileManager::r = sub { return $R };
 
-sub {
+my $app = sub {
     my $env = shift;
     my $req = Plack::Request->new($env);
 
@@ -28,4 +29,11 @@ sub {
     Apache2::FileManager->handler();
 
     return $R->response->finalize;
-    }
+};
+
+builder {
+    enable "Plack::Middleware::Static",
+        path => qr{^/.+},
+        root => $document_root;
+    $app;
+}
